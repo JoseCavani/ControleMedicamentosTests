@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace ControleMedicamentos.Dominio.ModuloMedicamento
 {
-    public class Medicamento : EntidadeBase<Medicamento>
+    public class Medicamento : EntidadeBase<Medicamento>, IComparable<Medicamento>
     {        
         public string Nome { get; set; }
         public string Descricao { get; set; }
@@ -98,6 +98,17 @@ namespace ControleMedicamentos.Dominio.ModuloMedicamento
             hash.Add(Fornecedor);
             hash.Add(QuantidadeRequisicoes);
             return hash.ToHashCode();
+        }
+
+        public int CompareTo(Medicamento other)
+        {
+            if (QuantidadeRequisicoes > other.QuantidadeRequisicoes)
+                return -1;
+
+            else if (QuantidadeRequisicoes == other.QuantidadeRequisicoes)
+                return 0;
+            else
+                return 1;
         }
     }
 }
