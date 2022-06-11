@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="ModuloFornecedor\**" />
+    <Compile Remove="ModuloFuncionario\**" />
+    <Compile Remove="ModuloPaciente\**" />
+    <Compile Remove="ModuloRequisicao\**" />
+    <EmbeddedResource Remove="ModuloFornecedor\**" />
+    <EmbeddedResource Remove="ModuloFuncionario\**" />
+    <EmbeddedResource Remove="ModuloPaciente\**" />
+    <EmbeddedResource Remove="ModuloRequisicao\**" />
+    <None Remove="ModuloFornecedor\**" />
+    <None Remove="ModuloFuncionario\**" />
+    <None Remove="ModuloPaciente\**" />
+    <None Remove="ModuloRequisicao\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="11.0.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.3" />
+    <PackageReference Include="coverlet.collector" Version="3.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ControleMedicamentos.Dominio\ControleMedicamentos.Dominio.csproj" />
+  </ItemGroup>
+
+</Project>
