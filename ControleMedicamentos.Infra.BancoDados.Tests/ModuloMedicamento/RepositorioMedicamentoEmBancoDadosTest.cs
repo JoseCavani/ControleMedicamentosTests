@@ -9,13 +9,19 @@ using ControleMedicamentos.Dominio.ModuloFornecedor;
 using FluentValidation.Results;
 using ControleMedicamentos.Infra.BancoDados.ModuloFornecedor;
 using System.Collections.Generic;
+using ControleMedicamentos.Infra.BancoDados.ModuloFuncionario;
+using ControleMedicamentos.Infra.BancoDados.ModuloPaciente;
+using ControleMedicamentos.Infra.BancoDados.ModuloRequisicao;
+using System;
 
 namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
 {
     [TestClass]
     public class RepositorioMedicamentoEmBancoDadosTest
     {
-        //TODO FAZER REQUISIÇÃO VALIDA PARA TODOS OS TESTS CAREFULL OF EQUAL COMPARISION
+
+        Random random = new Random();
+
         private const string sqlExcluirMedicamento =
           @"  DELETE FROM TBREQUISICAO  DBCC CHECKIDENT (TBREQUISICAO, RESEED, 0) DELETE FROM TBMEDICAMENTO  DBCC CHECKIDENT (TBMEDICAMENTO, RESEED, 0)";
 
@@ -64,6 +70,10 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
                 med.Fornecedor = fornecedor;
 
                 repositorio.Inserir(med);
+
+                Requisicao req = CriarRequisicao(med);
+                med.Requisicoes.Add(req);
+
                 registros.Add(med);
             }
 
@@ -71,10 +81,51 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
 
             for (int i = 0; i < registrosDoBanco.Count; i++)
             {
+                repositorio.CarregarRequisicoes(registrosDoBanco[i]);
                 Assert.AreEqual(registrosDoBanco[i], registros[i]);
             }
 
 
+        }
+
+
+
+        private Funcionario CriarEInserirFuncionario()
+        {
+            RepositorioFuncionarioEmBancoDados repositorioFuncionario = new();
+
+            Funcionario funcionario = new(random.Next().ToString(), "b", "c");
+
+            repositorioFuncionario.Inserir(funcionario);
+            return funcionario;
+        }
+
+
+
+        private Paciente CriarEInserirPaciente()
+        {
+            RepositorioPacienteEmBancoDados repositorioPaciente = new();
+
+            Paciente paciente = new(random.Next().ToString(), "b");
+            repositorioPaciente.Inserir(paciente);
+            return paciente;
+        }
+
+
+        private Requisicao CriarRequisicao(Medicamento med)
+        {
+            Paciente paciente = CriarEInserirPaciente();
+
+            Funcionario funcionario = CriarEInserirFuncionario();
+
+
+            RepositorioRequisicaoeEmBancoDados repositorio = new();
+
+            Requisicao requisicao = new(med, paciente, random.Next(), DateTime.Now, funcionario);
+
+            repositorio.Inserir(requisicao);
+
+            return requisicao;
         }
 
 
@@ -86,7 +137,7 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
             RepositorioFornecedorEmBancoDados repositorioFornecedor = new();
 
 
-            Fornecedor fornecedor = new("a","b","c","d","e");
+            Fornecedor fornecedor = new(random.Next().ToString(), "b","c","d","e");
             repositorioFornecedor.Inserir(fornecedor);
 
 
@@ -94,11 +145,17 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
             Medicamento med = new("medicamento1", "descricao1", "lote1", System.DateTime.Today);
 
             med.Fornecedor = fornecedor;
-
-
             repositorio.Inserir(med);
-            Medicamento med2 = repositorio.SelecionarPorID(med.Id);
 
+
+           CriarRequisicao(med);
+
+            repositorio.CarregarRequisicoes(med);
+
+
+
+            Medicamento med2 = repositorio.SelecionarPorID(med.Id);
+            repositorio.CarregarRequisicoes(med2);
 
             Assert.AreEqual(med, med2);
 
@@ -110,7 +167,7 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
             RepositorioMedicamentoEmBancoDados repositorio = new();
             RepositorioFornecedorEmBancoDados repositorioFornecedor = new();
 
-            Fornecedor fornecedor = new("a", "b", "c", "d", "e");
+            Fornecedor fornecedor = new(random.Next().ToString(), "b", "c", "d", "e");
             repositorioFornecedor.Inserir(fornecedor);
 
 
@@ -138,7 +195,7 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
             RepositorioMedicamentoEmBancoDados repositorio = new();
             RepositorioFornecedorEmBancoDados repositorioFornecedor = new();
 
-            Fornecedor fornecedor = new("a", "b", "c", "d", "e");
+            Fornecedor fornecedor = new(random.Next().ToString(), "b", "c", "d", "e");
             repositorioFornecedor.Inserir(fornecedor);
 
 
@@ -154,11 +211,16 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
             med.Lote = "ssss";
 
 
-            ValidationResult result = repositorio.Editar(med);
+            repositorio.Editar(med);
+
+            CriarRequisicao(med);
+
+            repositorio.CarregarRequisicoes(med);
 
 
             Medicamento med2 = repositorio.SelecionarPorID(med.Id);
 
+            repositorio.CarregarRequisicoes(med2);
 
             Assert.AreEqual(med, med2);
 

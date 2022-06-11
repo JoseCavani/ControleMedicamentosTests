@@ -1,5 +1,8 @@
 ﻿using ControleMedicamentos.Dominio.ModuloFornecedor;
+using ControleMedicamentos.Dominio.ModuloFuncionario;
 using ControleMedicamentos.Dominio.ModuloMedicamento;
+using ControleMedicamentos.Dominio.ModuloPaciente;
+using ControleMedicamentos.Dominio.ModuloRequisicao;
 using FluentValidation.Results;
 using System;
 using System.Collections.Generic;
@@ -161,6 +164,91 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloMedicamento
 
             return resultadoValidacao;
         }
+
+
+
+        #region Requisicao
+
+
+        private const string sqlSelecionarTodosRequisicoes =
+          @"SELECT 
+					R.[Data] AS REQUISICAO_DATA,
+					R.[ID] AS REQUISICAO_ID,
+					R.[QuantidadeMedicamento] AS REQUISICAO_QUANTIDADE,
+					P.[Id] AS PACIENTE_ID,
+					P.[CartaoSUS] AS PACIENTE_CARTAOSUS,
+					P.[Nome] AS PACIENTE_NOME,
+					FU.[Id] AS FUNCIONARIO_ID,
+					FU.[Login] AS FUNCIONARIO_LOGIN,
+					FU.[Nome] AS FUNCIONARIO_NOME,
+					FU.[Senha] AS FUNCIONARIO_SENHA
+	            FROM 
+					[TBRequisicao] AS R INNER JOIN
+					[TBPaciente] AS P
+				ON
+					R.Paciente_Id = P.Id INNER JOIN
+					[TBFuncionario] AS FU
+				ON
+					R.Funcionario_Id = FU.Id
+		        WHERE
+                    R.[Medicamento_Id] = @ID";
+
+
+
+        public void CarregarRequisicoes(Medicamento medicamento)
+        {
+            SqlConnection conexaoComBanco = new SqlConnection(enderecoBanco);
+
+            SqlCommand comandoSelecao = new SqlCommand(sqlSelecionarTodosRequisicoes, conexaoComBanco);
+            comandoSelecao.Parameters.AddWithValue("ID", medicamento.Id);
+
+            conexaoComBanco.Open();
+            SqlDataReader leitorRegistro = comandoSelecao.ExecuteReader();
+
+            while (leitorRegistro.Read())
+            {
+                Requisicao requisicao = ConverterParaRequisicao(leitorRegistro, medicamento);
+
+                medicamento.Requisicoes.Add(requisicao);
+            }
+
+            conexaoComBanco.Close();
+
+        }
+
+        private Requisicao ConverterParaRequisicao(SqlDataReader leitorRegistro,Medicamento medicamento)
+        {
+
+            int idPaciente = Convert.ToInt32(leitorRegistro["PACIENTE_ID"]);
+            string nomePaciente = Convert.ToString(leitorRegistro["PACIENTE_NOME"]);
+            string cartaoSUS = Convert.ToString(leitorRegistro["PACIENTE_CARTAOSUS"]);
+
+
+            var paciente = new Paciente(nomePaciente, cartaoSUS);
+            paciente.Id = idPaciente;
+
+            int funcionarioId = Convert.ToInt32(leitorRegistro["FUNCIONARIO_ID"]);
+            string funcionarioNome = Convert.ToString(leitorRegistro["FUNCIONARIO_NOME"]);
+            string funcionarioLogin = Convert.ToString(leitorRegistro["FUNCIONARIO_LOGIN"]);
+            string funcionarioSenha = Convert.ToString(leitorRegistro["FUNCIONARIO_SENHA"]);
+
+
+            var funcionario = new Funcionario(funcionarioNome, funcionarioLogin, funcionarioSenha);
+            funcionario.Id = funcionarioId;
+
+            int requisicaoId = Convert.ToInt32(leitorRegistro["REQUISICAO_ID"]);
+            int requisicaoQuantidade = Convert.ToInt32(leitorRegistro["REQUISICAO_QUANTIDADE"]);
+            DateTime requisicaoData = Convert.ToDateTime(leitorRegistro["REQUISICAO_DATA"]);
+
+            var requsicao = new Requisicao(medicamento, paciente, requisicaoQuantidade, requisicaoData, funcionario);
+            requsicao.Id = requisicaoId;
+
+
+            return requsicao;
+        }
+
+        #endregion
+
 
         public List<Medicamento> SelecionarTodos()
         {

@@ -160,7 +160,7 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloRequisicao
 
         }
 
-        private static Funcionario CriarEInserirFuncionario()
+        private  Funcionario CriarEInserirFuncionario()
         {
             RepositorioFuncionarioEmBancoDados repositorioFuncionario = new();
 
@@ -170,7 +170,7 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloRequisicao
             return funcionario;
         }
 
-        private static Medicamento CriarEInserirMedicamento()
+        private  Medicamento CriarEInserirMedicamento()
         {
             RepositorioMedicamentoEmBancoDados repositorioMedicamento = new();
             RepositorioFornecedorEmBancoDados repositorioFornecedor = new();

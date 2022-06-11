@@ -37,7 +37,14 @@ namespace ControleMedicamentos.Dominio.ModuloRequisicao
         {
             return obj is Requisicao requisicao &&
                    Id == requisicao.Id &&
-                   EqualityComparer<Medicamento>.Default.Equals(Medicamento, requisicao.Medicamento) &&
+                   Medicamento.Id == requisicao.Medicamento.Id &&
+                   Medicamento.Lote == requisicao.Medicamento.Lote &&
+                   Medicamento.Validade == requisicao.Medicamento.Validade &&
+                   Medicamento.Nome == requisicao.Medicamento.Nome &&
+                   Medicamento.Descricao == requisicao.Medicamento.Descricao &&
+                   Medicamento.QuantidadeRequisicoes == requisicao.Medicamento.QuantidadeRequisicoes &&
+                   Medicamento.Fornecedor.Equals(requisicao.Medicamento.Fornecedor) &&
+                   Medicamento.QuantidadeDisponivel == requisicao.Medicamento.QuantidadeDisponivel &&
                    EqualityComparer<Paciente>.Default.Equals(Paciente, requisicao.Paciente) &&
                    QtdMedicamento == requisicao.QtdMedicamento &&
                    Data.TrimMilliseconds() == requisicao.Data.TrimMilliseconds() &&

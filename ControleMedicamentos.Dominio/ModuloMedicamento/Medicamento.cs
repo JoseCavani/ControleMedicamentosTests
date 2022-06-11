@@ -41,14 +41,14 @@ namespace ControleMedicamentos.Dominio.ModuloMedicamento
             }
 
 
-            if(medicamento.Requisicoes.Count>0)
-            return Id == medicamento.Id &&
-                   Nome == medicamento.Nome &&
-                   Descricao == medicamento.Descricao &&
-                   Lote == medicamento.Lote &&
-                   Validade == medicamento.Validade &&
-                   QuantidadeDisponivel == medicamento.QuantidadeDisponivel &&
-                   EqualityComparer<List<Requisicao>>.Default.Equals(Requisicoes, medicamento.Requisicoes) &&
+            if (medicamento.Requisicoes.Count > 0)
+                return Id == medicamento.Id &&
+                       Nome == medicamento.Nome &&
+                       Descricao == medicamento.Descricao &&
+                       Lote == medicamento.Lote &&
+                       Validade == medicamento.Validade &&
+                       QuantidadeDisponivel == medicamento.QuantidadeDisponivel &&
+                       CompararRequisicoes(medicamento) &&
                    EqualityComparer<Fornecedor>.Default.Equals(Fornecedor, medicamento.Fornecedor) &&
                    QuantidadeRequisicoes == medicamento.QuantidadeRequisicoes;
 
@@ -64,12 +64,40 @@ namespace ControleMedicamentos.Dominio.ModuloMedicamento
 
         }
 
+        private bool CompararRequisicoes(Medicamento medicamento)
+        {
+            if(medicamento.Requisicoes.Count != Requisicoes.Count)
+                return false;
+
+            for (int i = 0; i < medicamento.Requisicoes.Count; i++)
+            {
+                if(!EqualityComparer<Requisicao>.Default.Equals(Requisicoes[i], medicamento.Requisicoes[i]))
+                    return false;
+            }
+            return true;
+        }
+
         public override void Atualizar(Medicamento registro)
         {
             Nome = registro.Nome;
             Descricao = registro.Descricao;
             Lote = registro.Lote;
             Validade = registro.Validade;
+        }
+
+        public override int GetHashCode()
+        {
+            HashCode hash = new HashCode();
+            hash.Add(Id);
+            hash.Add(Nome);
+            hash.Add(Descricao);
+            hash.Add(Lote);
+            hash.Add(Validade);
+            hash.Add(QuantidadeDisponivel);
+            hash.Add(Requisicoes);
+            hash.Add(Fornecedor);
+            hash.Add(QuantidadeRequisicoes);
+            return hash.ToHashCode();
         }
     }
 }

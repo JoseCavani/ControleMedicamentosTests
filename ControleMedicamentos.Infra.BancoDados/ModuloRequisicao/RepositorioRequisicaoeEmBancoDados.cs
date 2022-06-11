@@ -319,7 +319,7 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloRequisicao
             cmdInserir.Parameters.AddWithValue("QUANTIDADEMEDICAMENTO", registro.QtdMedicamento);
             cmdInserir.Parameters.AddWithValue("DATA", registro.Data);
             cmdInserir.Parameters.AddWithValue("FUNCIONARIO_ID", registro.Funcionario.Id);
-            cmdInserir.Parameters.AddWithValue("MEDICAMENTO_ID", registro.Paciente.Id);
+            cmdInserir.Parameters.AddWithValue("MEDICAMENTO_ID", registro.Medicamento.Id);
             cmdInserir.Parameters.AddWithValue("PACIENTE_ID", registro.Paciente.Id);
 
         }
