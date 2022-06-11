@@ -151,11 +151,19 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloMedicamento
             SqlCommand comandoExclusao = new SqlCommand(sqlExcluir, conexaoComBanco);
 
             comandoExclusao.Parameters.AddWithValue("ID", registro.Id);
-
-            conexaoComBanco.Open();
-            int IDRegistrosExcluidos = comandoExclusao.ExecuteNonQuery();
-
             var resultadoValidacao = new ValidationResult();
+            int IDRegistrosExcluidos = 0;
+            conexaoComBanco.Open();
+            try
+            {
+                IDRegistrosExcluidos = comandoExclusao.ExecuteNonQuery();
+            }
+            catch (SqlException ex)
+            {
+                resultadoValidacao.Errors.Add(new ValidationFailure("", ex.Message));
+            }
+
+         
 
             if (IDRegistrosExcluidos == 0)
                 resultadoValidacao.Errors.Add(new ValidationFailure("", "Não foi possível remover o registro"));
@@ -311,7 +319,6 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloMedicamento
 
 
 
-            //TODO REQUISICOES
 
             var fornecedor = new Fornecedor(nomeFornecedor, telefone, email, cidade, estado);
             fornecedor.Id = idFornecedor;

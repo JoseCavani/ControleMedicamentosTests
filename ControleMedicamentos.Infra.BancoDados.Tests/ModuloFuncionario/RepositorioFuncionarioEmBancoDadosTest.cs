@@ -111,8 +111,6 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloFuncionario
 
         }
 
-        //TODO NAO DEVE DELETAR FUNCIONARIO COM REQUISIÇÃO
-
     }
 }
 

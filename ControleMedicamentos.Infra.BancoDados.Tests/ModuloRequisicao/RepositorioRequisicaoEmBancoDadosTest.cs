@@ -160,6 +160,56 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloRequisicao
 
         }
 
+
+        [TestMethod]
+        public void Nao_deve_excluir_paceinte_ou_funcionario_ou_medicamento_com_requisicao()
+        {
+            Paciente paciente = CriarEInserirPaciente();
+            Medicamento med = CriarEInserirMedicamento();
+
+            Funcionario funcionario = CriarEInserirFuncionario();
+
+
+            RepositorioRequisicaoeEmBancoDados repositorio = new();
+
+            Requisicao requisicao = new(med, paciente, 5, DateTime.Now, funcionario);
+
+            repositorio.Inserir(requisicao);
+
+         
+            
+            
+            
+            RepositorioFuncionarioEmBancoDados repositorioFuncionario = new();
+
+           ValidationResult result = repositorioFuncionario.Excluir(funcionario);
+
+            Assert.IsTrue(result.Errors[0].ErrorMessage.Contains("The DELETE statement conflicted with the REFERENCE constraint"));
+
+          
+            
+            
+            
+            RepositorioPacienteEmBancoDados repositorioPaciente = new();
+
+            ValidationResult result2 = repositorioPaciente.Excluir(paciente);
+
+            Assert.IsTrue(result2.Errors[0].ErrorMessage.Contains("The DELETE statement conflicted with the REFERENCE constraint"));
+
+         
+            
+            
+            
+            
+            RepositorioMedicamentoEmBancoDados repositorioMedicamento = new();
+
+            ValidationResult result3 = repositorioMedicamento.Excluir(med);
+
+            Assert.IsTrue(result3.Errors[0].ErrorMessage.Contains("The DELETE statement conflicted with the REFERENCE constraint"));
+
+        }
+
+
         private  Funcionario CriarEInserirFuncionario()
         {
             RepositorioFuncionarioEmBancoDados repositorioFuncionario = new();

@@ -119,7 +119,6 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloPaciente
 
         }
 
-        //TODO NAO DEVE DELETAR Paciente COM REQUISIÇÃO
 
     }
 }
