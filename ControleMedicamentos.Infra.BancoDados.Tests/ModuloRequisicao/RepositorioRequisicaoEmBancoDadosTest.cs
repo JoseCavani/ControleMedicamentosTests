@@ -22,6 +22,8 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloRequisicao
     [TestClass]
     public class RepositorioRequisicaoEmBancoDadosTest
     {
+        RepositorioRequisicaoeEmBancoDados repositorio;
+        Random random = new Random();
         private const string sqlExcluir =
       @"
         DELETE FROM TBREQUISICAO  DBCC CHECKIDENT (TBREQUISICAO, RESEED, 0)
@@ -43,6 +45,9 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloRequisicao
 
             SqlCommand comandoExclusao = new SqlCommand(sqlExcluir, conexaoComBanco);
 
+
+            repositorio = new();
+
             conexaoComBanco.Open();
             comandoExclusao.ExecuteNonQuery();
             conexaoComBanco.Close();
@@ -51,20 +56,15 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloRequisicao
         [TestMethod]
         public void Deve_selecionar_todos_requisicoes()
         {
-            RepositorioRequisicaoeEmBancoDados repositorio = new();
 
             List<Requisicao> registros = new List<Requisicao>();
 
-            Paciente paciente = CriarEInserirPaciente();
-            Medicamento med = CriarEInserirMedicamento();
-
-            Funcionario funcionario = CriarEInserirFuncionario();
 
             for (int i = 0; i < 10; i++)
             {
 
 
-                Requisicao requisicao = new(med, paciente, i, DateTime.Now, funcionario);
+                Requisicao requisicao = CriarRequisicao();
 
                 repositorio.Inserir(requisicao);
 
@@ -80,27 +80,26 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloRequisicao
 
 
         }
+        [TestMethod]
+        public void Deve_selecionar_por_id()
+        {
+            Requisicao req = CriarRequisicao();
+            repositorio.Inserir(req);
 
+            Requisicao req2 = repositorio.SelecionarPorID(req.Id);
+
+            Assert.AreEqual(req2, req);
+        }
 
         [TestMethod]
         public void Deve_inserir_Requisicao()
         {
-            Paciente paciente = CriarEInserirPaciente();
-            Medicamento med = CriarEInserirMedicamento();
 
-            Funcionario funcionario = CriarEInserirFuncionario();
-
-
-            RepositorioRequisicaoeEmBancoDados repositorio = new();
-
-            Requisicao requisicao = new(med, paciente,5,DateTime.Now,funcionario);
+            Requisicao requisicao = CriarRequisicao();
 
             repositorio.Inserir(requisicao);
 
             Requisicao requisicao2 =  repositorio.SelecionarPorID(requisicao.Id);
-
-
-
 
             Assert.AreEqual(requisicao, requisicao2);
 
@@ -108,16 +107,9 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloRequisicao
         [TestMethod]
         public void Deve_excluir_Requisicao()
         {
-            Paciente paciente = CriarEInserirPaciente();
-            Medicamento med = CriarEInserirMedicamento();
+          
 
-            Funcionario funcionario = CriarEInserirFuncionario();
-
-
-
-            RepositorioRequisicaoeEmBancoDados repositorio = new();
-
-            Requisicao requisicao = new(med, paciente, 5, DateTime.Now, funcionario);
+            Requisicao requisicao = CriarRequisicao();
 
             repositorio.Inserir(requisicao);
 
@@ -132,16 +124,7 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloRequisicao
         public void Deve_editar_Requsiscao()
         {
 
-            Paciente paciente = CriarEInserirPaciente();
-
-            Medicamento med = CriarEInserirMedicamento();
-
-            Funcionario funcionario = CriarEInserirFuncionario();
-
-
-            RepositorioRequisicaoeEmBancoDados repositorio = new();
-
-            Requisicao requisicao = new(med, paciente, 5, DateTime.Now, funcionario);
+            Requisicao requisicao = CriarRequisicao();
 
             repositorio.Inserir(requisicao);
 
@@ -153,16 +136,65 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloRequisicao
             Requisicao requisicao2 = repositorio.SelecionarPorID(requisicao.Id);
 
 
-
-
             Assert.AreEqual(requisicao, requisicao2);
 
 
         }
 
+        [TestMethod]
+        public void Nao_deve_excluir_funcionario_com_requisicao()
+        {
+
+            RepositorioFuncionarioEmBancoDados repositorioFuncionario = new();
+
+
+            Requisicao requisicao = CriarRequisicao();
+
+            repositorio.Inserir(requisicao);
+
+            ValidationResult result = repositorioFuncionario.Excluir(requisicao.Funcionario);
+
+            Assert.IsTrue(result.Errors[0].ErrorMessage.Contains("The DELETE statement conflicted with the REFERENCE constraint"));
+
+
+        }
 
         [TestMethod]
-        public void Nao_deve_excluir_paceinte_ou_funcionario_ou_medicamento_com_requisicao()
+        public void Nao_deve_excluir_paceinte_com_requisicao()
+        {
+
+            Requisicao requisicao = CriarRequisicao();
+
+            repositorio.Inserir(requisicao);
+
+
+            RepositorioPacienteEmBancoDados repositorioPaciente = new();
+
+            ValidationResult result2 = repositorioPaciente.Excluir(requisicao.Paciente);
+
+            Assert.IsTrue(result2.Errors[0].ErrorMessage.Contains("The DELETE statement conflicted with the REFERENCE constraint"));
+
+        }
+
+
+        [TestMethod]
+        public void Nao_deve_excluir_medicamento_com_requisicao()
+        {
+
+            Requisicao requisicao = CriarRequisicao();
+
+            repositorio.Inserir(requisicao);
+
+            
+            RepositorioMedicamentoEmBancoDados repositorioMedicamento = new();
+
+            ValidationResult result3 = repositorioMedicamento.Excluir(requisicao.Medicamento);
+
+            Assert.IsTrue(result3.Errors[0].ErrorMessage.Contains("The DELETE statement conflicted with the REFERENCE constraint"));
+
+        }
+
+        private Requisicao CriarRequisicao()
         {
             Paciente paciente = CriarEInserirPaciente();
             Medicamento med = CriarEInserirMedicamento();
@@ -170,43 +202,7 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloRequisicao
             Funcionario funcionario = CriarEInserirFuncionario();
 
 
-            RepositorioRequisicaoeEmBancoDados repositorio = new();
-
-            Requisicao requisicao = new(med, paciente, 5, DateTime.Now, funcionario);
-
-            repositorio.Inserir(requisicao);
-
-         
-            
-            
-            
-            RepositorioFuncionarioEmBancoDados repositorioFuncionario = new();
-
-           ValidationResult result = repositorioFuncionario.Excluir(funcionario);
-
-            Assert.IsTrue(result.Errors[0].ErrorMessage.Contains("The DELETE statement conflicted with the REFERENCE constraint"));
-
-          
-            
-            
-            
-            RepositorioPacienteEmBancoDados repositorioPaciente = new();
-
-            ValidationResult result2 = repositorioPaciente.Excluir(paciente);
-
-            Assert.IsTrue(result2.Errors[0].ErrorMessage.Contains("The DELETE statement conflicted with the REFERENCE constraint"));
-
-         
-            
-            
-            
-            
-            RepositorioMedicamentoEmBancoDados repositorioMedicamento = new();
-
-            ValidationResult result3 = repositorioMedicamento.Excluir(med);
-
-            Assert.IsTrue(result3.Errors[0].ErrorMessage.Contains("The DELETE statement conflicted with the REFERENCE constraint"));
-
+           return new(med, paciente, random.Next(), DateTime.Now, funcionario);
         }
 
 
@@ -214,7 +210,7 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloRequisicao
         {
             RepositorioFuncionarioEmBancoDados repositorioFuncionario = new();
 
-            Funcionario funcionario = new("a", "b", "c");
+            Funcionario funcionario = new(random.Next().ToString(), "b", "c");
 
             repositorioFuncionario.Inserir(funcionario);
             return funcionario;
@@ -226,12 +222,12 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloRequisicao
             RepositorioFornecedorEmBancoDados repositorioFornecedor = new();
 
 
-            Fornecedor fornecedor = new("a", "b", "c", "d", "e");
+            Fornecedor fornecedor = new(random.Next().ToString(), "b", "c", "d", "e");
             repositorioFornecedor.Inserir(fornecedor);
 
 
 
-            Medicamento med = new("medicamento1", "descricao1", "lote1", System.DateTime.Today);
+            Medicamento med = new(random.Next().ToString(), "descricao1", "lote1", System.DateTime.Today);
 
             med.Fornecedor = fornecedor;
 
@@ -244,7 +240,7 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloRequisicao
         {
             RepositorioPacienteEmBancoDados repositorioPaciente = new();
 
-            Paciente paciente = new("a", "b");
+            Paciente paciente = new(random.Next().ToString(), "b");
             repositorioPaciente.Inserir(paciente);
             return paciente;
         }

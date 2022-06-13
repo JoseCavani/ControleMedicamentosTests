@@ -22,11 +22,19 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
 
         Random random = new Random();
 
+        RepositorioMedicamentoEmBancoDados repositorio = new();
+
+        RepositorioFornecedorEmBancoDados repositorioFornecedor = new();
+
+
         private const string sqlExcluirMedicamento =
           @"  DELETE FROM TBREQUISICAO  DBCC CHECKIDENT (TBREQUISICAO, RESEED, 0) DELETE FROM TBMEDICAMENTO  DBCC CHECKIDENT (TBMEDICAMENTO, RESEED, 0)";
 
         private const string sqlExcluirFornecedor =
           @"DELETE FROM TBFORNECEDOR  DBCC CHECKIDENT (TBFORNECEDOR, RESEED, 0)";
+
+        private const string sqlExcluirRequisicao =
+        @"DELETE FROM TBREQUISICAO  DBCC CHECKIDENT (TBREQUISICAO, RESEED, 0)";
 
 
         private const string enderecoBanco =
@@ -52,27 +60,16 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
         public void Deve_selecionar_todos_medicamentos()
         {
 
-
-            RepositorioMedicamentoEmBancoDados repositorio = new();
-            RepositorioFornecedorEmBancoDados repositorioFornecedor = new();
-
             List<Medicamento> registros = new List<Medicamento>();
 
-
-            Fornecedor fornecedor = new("a", "b", "c", "d", "e");
-            repositorioFornecedor.Inserir(fornecedor);
+         
 
 
             for (int i = 0; i < 10; i++)
             {
-                Medicamento med = new(i.ToString(), "descricao1", "lote1", System.DateTime.Today);
 
-                med.Fornecedor = fornecedor;
+                Medicamento med = CriarEInserirMedicamento();
 
-                repositorio.Inserir(med);
-
-                Requisicao req = CriarRequisicao(med);
-                med.Requisicoes.Add(req);
 
                 registros.Add(med);
             }
@@ -88,7 +85,32 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
 
         }
 
+        private Medicamento CriarEInserirMedicamento()
+        {
+            Medicamento medicamento = new(random.Next().ToString(), "descricao1", "lote1", System.DateTime.Today);
 
+            Fornecedor fornecedor = CriarFornecedor();
+            repositorioFornecedor.Inserir(fornecedor);
+
+
+            medicamento.QuantidadeDisponivel = random.Next(1, 10);
+            medicamento.Fornecedor = fornecedor;
+
+
+            repositorio.Inserir(medicamento);
+
+            CriarRequisicao(medicamento);
+
+
+            repositorio.CarregarRequisicoes(medicamento);
+
+            return medicamento;
+        }
+
+        private  Fornecedor CriarFornecedor()
+        {
+            return new(random.Next().ToString(), "b", "c", "d", "e");
+        }
 
         private Funcionario CriarEInserirFuncionario()
         {
@@ -128,31 +150,53 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
             return requisicao;
         }
 
+        [TestMethod]
+        public void Deve_mostrar_medicamento_com_pouca_quantidade()
+        {
+            for (int i = 0; i < 3; i++)
+            {
 
+                Medicamento med = CriarEInserirMedicamento();
+                int number = random.Next(1, 10);
+                for (int i2 = 0; i2 < number; i2++)
+                {
+                    CriarRequisicao(med);
+                }
+            }
+
+
+
+
+            List<Medicamento> medicamentos = repositorio.SelecionarEmFalta();
+
+            foreach (var item in medicamentos)
+            {
+                Assert.IsTrue(item.QuantidadeDisponivel <  5);
+
+            }
+
+
+        }
+
+        [TestMethod]
+        public void Deve_selecionar_por_id()
+        {
+
+
+            Medicamento registro = CriarEInserirMedicamento();
+
+            Medicamento registro2 = repositorio.SelecionarPorID(registro.Id);
+
+            repositorio.CarregarRequisicoes(registro2);
+
+            Assert.AreEqual(registro2, registro);
+        }
 
         [TestMethod]
         public void Deve_inserir_medicamento()
         {
-            RepositorioMedicamentoEmBancoDados repositorio = new();
-            RepositorioFornecedorEmBancoDados repositorioFornecedor = new();
 
-
-            Fornecedor fornecedor = new(random.Next().ToString(), "b","c","d","e");
-            repositorioFornecedor.Inserir(fornecedor);
-
-
-
-            Medicamento med = new("medicamento1", "descricao1", "lote1", System.DateTime.Today);
-
-            med.Fornecedor = fornecedor;
-            repositorio.Inserir(med);
-
-
-           CriarRequisicao(med);
-
-            repositorio.CarregarRequisicoes(med);
-
-
+            Medicamento med = CriarEInserirMedicamento();
 
             Medicamento med2 = repositorio.SelecionarPorID(med.Id);
             repositorio.CarregarRequisicoes(med2);
@@ -164,20 +208,17 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
         public void Deve_excluir_medicamento()
         {
 
-            RepositorioMedicamentoEmBancoDados repositorio = new();
-            RepositorioFornecedorEmBancoDados repositorioFornecedor = new();
+            Medicamento med = CriarEInserirMedicamento();
 
-            Fornecedor fornecedor = new(random.Next().ToString(), "b", "c", "d", "e");
-            repositorioFornecedor.Inserir(fornecedor);
+            SqlConnection conexaoComBanco = new SqlConnection(enderecoBanco);
 
-
-
-            Medicamento med = new("medicamento1", "descricao1", "lote1", System.DateTime.Today);
-
-            med.Fornecedor = fornecedor;
+            SqlCommand comandoExclusaoRequisicao = new SqlCommand(sqlExcluirFornecedor, conexaoComBanco);
+            SqlCommand comandoExclusaoFornecedor = new SqlCommand(sqlExcluirRequisicao, conexaoComBanco);
 
 
-            repositorio.Inserir(med);
+            conexaoComBanco.Open();
+            comandoExclusaoFornecedor.ExecuteNonQuery();
+            conexaoComBanco.Close();
 
             ValidationResult result = repositorio.Excluir(med);
 
@@ -186,25 +227,12 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
 
         }
 
-    
-
         [TestMethod]
         public void Deve_editar_medicamento()
         {
 
-            RepositorioMedicamentoEmBancoDados repositorio = new();
-            RepositorioFornecedorEmBancoDados repositorioFornecedor = new();
+            Medicamento med = CriarEInserirMedicamento();
 
-            Fornecedor fornecedor = new(random.Next().ToString(), "b", "c", "d", "e");
-            repositorioFornecedor.Inserir(fornecedor);
-
-
-            Medicamento med = new("medicamento1", "descricao1", "lote1", System.DateTime.Today);
-
-            med.Fornecedor = fornecedor;
-
-
-            repositorio.Inserir(med);
 
             med.Nome = "qqqq";
             med.Descricao = "bbb";
@@ -213,9 +241,6 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
 
             repositorio.Editar(med);
 
-            CriarRequisicao(med);
-
-            repositorio.CarregarRequisicoes(med);
 
 
             Medicamento med2 = repositorio.SelecionarPorID(med.Id);
@@ -230,19 +255,12 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
         [TestMethod]
         public void Deve_Mostrar_Mais_Requisitados()
         {
-            RepositorioMedicamentoEmBancoDados repositorio = new();
-            RepositorioFornecedorEmBancoDados repositorioFornecedor = new();
-
-
-            Fornecedor fornecedor = new(random.Next().ToString(), "b", "c", "d", "e");
-            repositorioFornecedor.Inserir(fornecedor);
 
 
             for (int i = 0; i < 3; i++)
             {
-                Medicamento med = new(random.Next().ToString(), "descricao1", "lote1", System.DateTime.Today);
-                med.Fornecedor = fornecedor;
-                repositorio.Inserir(med);
+
+                Medicamento med = CriarEInserirMedicamento();
                 int number = random.Next(1, 10);
                 for (int i2 = 0; i2 < number; i2++)
                 {
@@ -250,8 +268,6 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
                 }
             }
 
-
-           
 
           List<Medicamento> medicamentos =  repositorio.SelecionarTodos();
 

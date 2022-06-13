@@ -17,7 +17,9 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloFuncionario
         private const string sqlExcluir =
           @"DELETE FROM TBFuncionario  DBCC CHECKIDENT (TBFuncionario, RESEED, 0)";
 
+        Random  random = new Random();
 
+        RepositorioFuncionarioEmBancoDados repositorio = new();
 
         private const string enderecoBanco =
        "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=DBMed;Integrated Security=True;Connect Timeout=60;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
@@ -35,12 +37,26 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloFuncionario
             conexaoComBanco.Close();
         }
 
+
+
+        [TestMethod]
+        public void Deve_selecionar_por_id()
+        {
+            Funcionario registro = CriarFuncionario();
+            repositorio.Inserir(registro);
+
+            Funcionario registro2 = repositorio.SelecionarPorID(registro.Id);
+
+            Assert.AreEqual(registro2, registro);
+        }
+
+
+
         [TestMethod]
         public void Deve_inserir_Funcionario()
         {
-            RepositorioFuncionarioEmBancoDados repositorio = new();
 
-            Funcionario funcionario = new("a", "b", "c");
+            Funcionario funcionario = CriarFuncionario();
 
             repositorio.Inserir(funcionario);
 
@@ -49,13 +65,18 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloFuncionario
             Assert.AreEqual(funcionario, Funcionario2);
 
         }
+
+        private  Funcionario CriarFuncionario()
+        {
+            return new(random.Next().ToString(), "b", "c");
+        }
+
         [TestMethod]
         public void Deve_excluir_Funcionario()
         {
 
-            RepositorioFuncionarioEmBancoDados repositorio = new();
 
-            Funcionario Funcionario = new("a", "b", "c");
+            Funcionario Funcionario = CriarFuncionario();
 
             repositorio.Inserir(Funcionario);
 
@@ -68,13 +89,11 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloFuncionario
         [TestMethod]
         public void Deve_selecionar_todos_funcionarios()
         {
-            RepositorioFuncionarioEmBancoDados repositorio = new();
             List<Funcionario> registros = new List<Funcionario>();
-
 
             for (int i = 0; i < 10; i++)
             {
-                Funcionario funcionario = new(i.ToString(), "b", "c");
+                Funcionario funcionario = CriarFuncionario();
 
                 repositorio.Inserir(funcionario);
                 registros.Add(funcionario);
@@ -94,9 +113,8 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloFuncionario
         public void Deve_editar_Funcionario()
         {
 
-            RepositorioFuncionarioEmBancoDados repositorio = new();
 
-            Funcionario Funcionario = new("a", "b", "c");
+            Funcionario Funcionario = CriarFuncionario();
 
             repositorio.Inserir(Funcionario);
 

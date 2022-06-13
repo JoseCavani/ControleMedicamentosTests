@@ -17,12 +17,12 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloPaciente
         private const string sqlExcluir =
          @"   DELETE FROM TBREQUISICAO  DBCC CHECKIDENT (TBREQUISICAO, RESEED, 0) DELETE FROM TBPACIENTE  DBCC CHECKIDENT (TBPACIENTE, RESEED, 0)";
 
-
+        Random random = new Random();
 
         private const string enderecoBanco =
        "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=DBMed;Integrated Security=True;Connect Timeout=60;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
 
-
+        RepositorioPacienteEmBancoDados repositorio;
 
         public RepositorioPacienteEmBancoDadosTest()
         {
@@ -30,16 +30,27 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloPaciente
 
             SqlCommand comandoExclusao = new SqlCommand(sqlExcluir, conexaoComBanco);
 
+            repositorio = new();
+
             conexaoComBanco.Open();
             comandoExclusao.ExecuteNonQuery();
             conexaoComBanco.Close();
         }
 
+        [TestMethod]
+        public void Deve_selecionar_por_id()
+        {
+            Paciente registro = CriarPaciente();
+            repositorio.Inserir(registro);
+
+            Paciente registro2 = repositorio.SelecionarPorID(registro.Id);
+
+            Assert.AreEqual(registro2, registro);
+        }
 
         [TestMethod]
         public void Deve_selecionar_todos_Pacientes()
         {
-            RepositorioPacienteEmBancoDados repositorio = new();
 
             List<Paciente> registros = new List<Paciente>();
 
@@ -47,7 +58,7 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloPaciente
             for (int i = 0; i < 10; i++)
             {
 
-                Paciente paciente = new(i.ToString(), "b");
+                Paciente paciente = CriarPaciente();
 
                 repositorio.Inserir(paciente);
                 registros.Add(paciente);
@@ -63,14 +74,11 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloPaciente
 
         }
 
-
-
         [TestMethod]
         public void Deve_inserir_Paciente()
         {
-            RepositorioPacienteEmBancoDados repositorio = new();
 
-            Paciente paciente = new("a", "b");
+            Paciente paciente = CriarPaciente();
 
             repositorio.Inserir(paciente);
 
@@ -83,9 +91,8 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloPaciente
         public void Deve_excluir_Paciente()
         {
 
-            RepositorioPacienteEmBancoDados repositorio = new();
 
-            Paciente Paciente = new("a", "b");
+            Paciente Paciente = CriarPaciente();
 
             repositorio.Inserir(Paciente);
 
@@ -95,16 +102,11 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloPaciente
             Assert.AreEqual(result.Errors.Count, 0);
 
         }
-
-      
-
         [TestMethod]
         public void Deve_editar_Paciente()
         {
 
-            RepositorioPacienteEmBancoDados repositorio = new();
-
-            Paciente Paciente = new("a", "b");
+            Paciente Paciente = CriarPaciente();
 
             repositorio.Inserir(Paciente);
 
@@ -119,6 +121,11 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloPaciente
 
         }
 
+        private Paciente CriarPaciente()
+        {
+           return new(random.Next().ToString(), "b");
+
+        }
 
     }
 }

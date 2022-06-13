@@ -54,6 +54,31 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloMedicamento
 		        WHERE
 			        [ID] = @ID";
 
+
+        private const string sqlSelecionarEmFalta =
+            @"SELECT 
+                    M.[ID] AS ID,
+		            M.[NOME] AS NOME,
+                    M.[DESCRICAO] AS DESCRICAO,
+                    M.[LOTE] AS LOTE,
+                    M.[VALIDADE] AS VALIDADE,
+                    M.[QUANTIDADEDISPONIVEL] AS QUANTIDADE,
+					F.[EMAIL] AS FORNECEDOR_EMAIL,
+					F.[ESTADO] AS FORNECEDOR_ESTADO,
+					F.[ID] AS FORNECEDOR_ID,
+					F.[NOME] AS FORNECEDOR_NOME,
+                    F.[CIDADE] AS FORNECEDOR_CIDADE,
+					F.[TELEFONE] AS FORNECEDOR_TELEFONE
+	            FROM 
+		            [TBMEDICAMENTO] AS M LEFT JOIN
+                    [TBFORNECEDOR] AS F
+                ON
+                    M.[FORNECEDOR_ID] = F.ID
+                WHERE
+                 M.[QUANTIDADEDISPONIVEL] < 5
+";
+
+
         private const string sqlSelecionarTodos =
             @"SELECT 
                     M.[ID] AS ID,
@@ -171,6 +196,29 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloMedicamento
             conexaoComBanco.Close();
 
             return resultadoValidacao;
+        }
+
+        public List<Medicamento> SelecionarEmFalta()
+        {
+            SqlConnection conexaoComBanco = new SqlConnection(enderecoBanco);
+
+            SqlCommand comandoSelecao = new SqlCommand(sqlSelecionarEmFalta, conexaoComBanco);
+
+            conexaoComBanco.Open();
+            SqlDataReader leitorRegistro = comandoSelecao.ExecuteReader();
+
+            List<Medicamento> registros = new List<Medicamento>();
+
+            while (leitorRegistro.Read())
+            {
+                Medicamento registro = ConverterParaRegistro(leitorRegistro);
+
+                registros.Add(registro);
+            }
+
+            conexaoComBanco.Close();
+
+            return registros;
         }
 
 
@@ -308,6 +356,7 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloMedicamento
             string descricao = Convert.ToString(leitorRegistro["DESCRICAO"]);
             string lote = Convert.ToString(leitorRegistro["LOTE"]);
             DateTime validade = Convert.ToDateTime(leitorRegistro["VALIDADE"]).Date;
+            int quantidade = Convert.ToInt32(leitorRegistro["QUANTIDADE"]);
 
 
             int idFornecedor = Convert.ToInt32(leitorRegistro["FORNECEDOR_ID"]);
@@ -326,6 +375,7 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloMedicamento
             var registro = new Medicamento(nome, descricao, lote, validade);
             registro.Id = Id;
             registro.Fornecedor = fornecedor;
+            registro.QuantidadeDisponivel = quantidade;
 
             return registro;
         }

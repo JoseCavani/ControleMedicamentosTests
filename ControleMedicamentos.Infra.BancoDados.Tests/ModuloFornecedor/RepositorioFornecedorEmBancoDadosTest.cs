@@ -25,6 +25,10 @@ namespace Controlefornecedors.Infra.BancoDados.Tests.ModuloFornecedor
         private const string sqlExcluirFornecedor =
           @"DELETE FROM TBFORNECEDOR  DBCC CHECKIDENT (TBFORNECEDOR, RESEED, 0)";
 
+        RepositorioMedicamentoEmBancoDados repositorioMedicamento = new();
+        RepositorioFornecedorEmBancoDados repositorio = new();
+
+        Random random = new Random();
 
         private const string enderecoBanco =
        "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=DBMed;Integrated Security=True;Connect Timeout=60;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
@@ -46,12 +50,24 @@ namespace Controlefornecedors.Infra.BancoDados.Tests.ModuloFornecedor
             conexaoComBanco.Close();
         }
 
+
+        [TestMethod]
+        public void Deve_selecionar_por_id()
+        {
+            Fornecedor registro = CriarFornecedor();
+            repositorio.Inserir(registro);
+
+            Fornecedor registro2 = repositorio.SelecionarPorID(registro.Id);
+
+            Assert.AreEqual(registro2, registro);
+        }
+
+
+
         [TestMethod]
         public void Deve_inserir_fornecedor()
         {
-            RepositorioFornecedorEmBancoDados repositorio = new();
-
-            Fornecedor fornecedor = new("a", "b", "c", "d", "e");
+            Fornecedor fornecedor = CriarFornecedor();
 
             repositorio.Inserir(fornecedor);
 
@@ -60,13 +76,17 @@ namespace Controlefornecedors.Infra.BancoDados.Tests.ModuloFornecedor
             Assert.AreEqual(fornecedor, fornecedor2);
 
         }
+
+        private Fornecedor CriarFornecedor()
+        {
+            return new(random.Next().ToString(), "b", "c", "d", "e");
+        }
+
         [TestMethod]
         public void Deve_excluir_fornecedor()
         {
 
-            RepositorioFornecedorEmBancoDados repositorio = new();
-
-            Fornecedor fornecedor = new("a", "b", "c", "d", "e");
+            Fornecedor fornecedor = CriarFornecedor();
 
             repositorio.Inserir(fornecedor);
 
@@ -79,13 +99,12 @@ namespace Controlefornecedors.Infra.BancoDados.Tests.ModuloFornecedor
         [TestMethod]
         public void Deve_selecionar_todos_fornecedores()
         {
-            RepositorioFornecedorEmBancoDados repositorio = new();
             List<Fornecedor> fornecedors = new List<Fornecedor>();
 
 
             for (int i = 0; i < 10; i++)
             {
-                Fornecedor fornecedor = new(i.ToString(), "b", "c", "d", "e");
+                Fornecedor fornecedor = CriarFornecedor();
                 repositorio.Inserir(fornecedor);
                 fornecedors.Add(fornecedor);
             }
@@ -101,13 +120,11 @@ namespace Controlefornecedors.Infra.BancoDados.Tests.ModuloFornecedor
         }
 
 
-            [TestMethod]
+        [TestMethod]
         public void Deve_editar_fornecedor()
         {
 
-            RepositorioFornecedorEmBancoDados repositorio = new();
-
-            Fornecedor fornecedor = new("a", "b", "c", "d", "e");
+            Fornecedor fornecedor = CriarFornecedor();
       
             repositorio.Inserir(fornecedor);
 
@@ -127,15 +144,13 @@ namespace Controlefornecedors.Infra.BancoDados.Tests.ModuloFornecedor
         {
 
 
-            RepositorioMedicamentoEmBancoDados repositorioMedicamento = new();
-            RepositorioFornecedorEmBancoDados repositorioFornecedor = new();
 
-            Fornecedor fornecedor = new("a", "b", "c", "d", "e");
+            Fornecedor fornecedor = CriarFornecedor();
 
-            repositorioFornecedor.Inserir(fornecedor);
+            repositorio.Inserir(fornecedor);
 
 
-            Medicamento med = new("medicamento1", "descricao1", "lote1", System.DateTime.Now);
+            Medicamento med = new(random.Next().ToString(), "descricao1", "lote1", System.DateTime.Now);
 
             med.Fornecedor = fornecedor;
 
@@ -152,7 +167,7 @@ namespace Controlefornecedors.Infra.BancoDados.Tests.ModuloFornecedor
 
 
 
-            ValidationResult result = repositorioFornecedor.Excluir(fornecedor);
+            ValidationResult result = repositorio.Excluir(fornecedor);
 
 
             Assert.IsTrue(result.Errors[0].ErrorMessage.Contains("The DELETE statement conflicted with the REFERENCE constraint"));
