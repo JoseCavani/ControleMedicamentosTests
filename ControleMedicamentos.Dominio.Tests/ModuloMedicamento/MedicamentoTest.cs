@@ -30,6 +30,20 @@ namespace ControleMedicamentos.Dominio.Tests.ModuloMedicamento
 
 
         [TestMethod]
+        public void Nome_nao_deve_ser_nulo()
+        {
+            Medicamento med = new("", "descricao1", "lote1", System.DateTime.Now);
+
+            var validador = new ValidadorMedicamento();
+
+            var resultadoValidacao = validador.Validate(med);
+
+            Assert.IsFalse(resultadoValidacao.IsValid);
+
+        }
+
+
+        [TestMethod]
         public void Deve_Ser_Objetos_Iguais()
         {
             Medicamento med = new("medicamento1", "descricao1", "lote1", System.DateTime.Now);

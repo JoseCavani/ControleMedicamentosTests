@@ -194,6 +194,9 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloRequisicao
 
         }
 
+
+
+
         private Requisicao CriarRequisicao()
         {
             Paciente paciente = CriarEInserirPaciente();
@@ -204,7 +207,6 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloRequisicao
 
            return new(med, paciente, random.Next(), DateTime.Now, funcionario);
         }
-
 
         private  Funcionario CriarEInserirFuncionario()
         {

@@ -40,8 +40,7 @@ namespace ControleMedicamentos.Dominio.ModuloMedicamento
                 return false;
             }
 
-
-            if (medicamento.Requisicoes.Count > 0)
+           
                 return Id == medicamento.Id &&
                        Nome == medicamento.Nome &&
                        Descricao == medicamento.Descricao &&
@@ -52,16 +51,7 @@ namespace ControleMedicamentos.Dominio.ModuloMedicamento
                    EqualityComparer<Fornecedor>.Default.Equals(Fornecedor, medicamento.Fornecedor) &&
                    QuantidadeRequisicoes == medicamento.QuantidadeRequisicoes;
 
-            else
-               return Id == medicamento.Id &&
-                   Nome == medicamento.Nome &&
-                   Descricao == medicamento.Descricao &&
-                   Lote == medicamento.Lote &&
-                   Validade == medicamento.Validade &&
-                   QuantidadeDisponivel == medicamento.QuantidadeDisponivel &&
-                   EqualityComparer<Fornecedor>.Default.Equals(Fornecedor, medicamento.Fornecedor) &&
-                   QuantidadeRequisicoes == medicamento.QuantidadeRequisicoes;
-
+   
         }
 
         private bool CompararRequisicoes(Medicamento medicamento)

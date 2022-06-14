@@ -256,10 +256,8 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
         public void Deve_Mostrar_Mais_Requisitados()
         {
 
-
             for (int i = 0; i < 3; i++)
             {
-
                 Medicamento med = CriarEInserirMedicamento();
                 int number = random.Next(1, 10);
                 for (int i2 = 0; i2 < number; i2++)
