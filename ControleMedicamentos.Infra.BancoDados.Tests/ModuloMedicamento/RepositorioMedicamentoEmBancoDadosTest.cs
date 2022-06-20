@@ -13,11 +13,12 @@ using ControleMedicamentos.Infra.BancoDados.ModuloFuncionario;
 using ControleMedicamentos.Infra.BancoDados.ModuloPaciente;
 using ControleMedicamentos.Infra.BancoDados.ModuloRequisicao;
 using System;
+using ControleMedicamentos.Infra.BancoDados.Tests.ModuloCompartilhado;
 
 namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
 {
     [TestClass]
-    public class RepositorioMedicamentoEmBancoDadosTest
+    public class RepositorioMedicamentoEmBancoDadosTest : BaseTestRepositorio
     {
 
         Random random = new Random();
@@ -26,34 +27,8 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
 
         RepositorioFornecedorEmBancoDados repositorioFornecedor = new();
 
+        RepositorioRequisicaoeEmBancoDados repositorioRequisicao = new();
 
-        private const string sqlExcluirMedicamento =
-          @"  DELETE FROM TBREQUISICAO  DBCC CHECKIDENT (TBREQUISICAO, RESEED, 0) DELETE FROM TBMEDICAMENTO  DBCC CHECKIDENT (TBMEDICAMENTO, RESEED, 0)";
-
-        private const string sqlExcluirFornecedor =
-          @"DELETE FROM TBFORNECEDOR  DBCC CHECKIDENT (TBFORNECEDOR, RESEED, 0)";
-
-        private const string sqlExcluirRequisicao =
-        @"DELETE FROM TBREQUISICAO  DBCC CHECKIDENT (TBREQUISICAO, RESEED, 0)";
-
-
-        private const string enderecoBanco =
-       "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=DBMed;Integrated Security=True;Connect Timeout=60;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
-
-
-        public RepositorioMedicamentoEmBancoDadosTest()
-        {
-            SqlConnection conexaoComBanco = new SqlConnection(enderecoBanco);
-
-            SqlCommand comandoExclusao = new SqlCommand(sqlExcluirMedicamento, conexaoComBanco);
-            SqlCommand comandoExclusaoFornecedor = new SqlCommand(sqlExcluirFornecedor, conexaoComBanco);
-
-
-            conexaoComBanco.Open();
-            comandoExclusao.ExecuteNonQuery();
-            comandoExclusaoFornecedor.ExecuteNonQuery();
-            conexaoComBanco.Close();
-        }
 
 
         [TestMethod]
@@ -210,17 +185,14 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
 
             Medicamento med = CriarEInserirMedicamento();
 
-            SqlConnection conexaoComBanco = new SqlConnection(enderecoBanco);
+            repositorioFornecedor.Excluir(med.Fornecedor);
 
-            SqlCommand comandoExclusaoRequisicao = new SqlCommand(sqlExcluirFornecedor, conexaoComBanco);
-            SqlCommand comandoExclusaoFornecedor = new SqlCommand(sqlExcluirRequisicao, conexaoComBanco);
+            foreach (var item in med.Requisicoes)
+            {
+                repositorioRequisicao.Excluir(item);
+            }
 
-
-            conexaoComBanco.Open();
-            comandoExclusaoFornecedor.ExecuteNonQuery();
-            conexaoComBanco.Close();
-
-            ValidationResult result = repositorio.Excluir(med);
+           ValidationResult result = repositorio.Excluir(med);
 
 
             Assert.AreEqual(result.Errors.Count, 0);

@@ -5,50 +5,24 @@ using ControleMedicamentos.Dominio.ModuloPaciente;
 using ControleMedicamentos.Dominio.ModuloRequisicao;
 using ControleMedicamentos.Infra.BancoDados.ModuloFornecedor;
 using ControleMedicamentos.Infra.BancoDados.ModuloMedicamento;
+using ControleMedicamentos.Infra.BancoDados.Tests.ModuloCompartilhado;
 using FluentValidation.Results;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using FluentAssertions;
 
 namespace Controlefornecedors.Infra.BancoDados.Tests.ModuloFornecedor
 {
     [TestClass]
-    public class RepositorioFornecedorEmBancoDadosTest
+    public class RepositorioFornecedorEmBancoDadosTest :BaseTestRepositorio
     {
-        private const string sqlExcluirMedicamento =
-          @"  DELETE FROM TBREQUISICAO  DBCC CHECKIDENT (TBREQUISICAO, RESEED, 0) DELETE FROM TBMEDICAMENTO  DBCC CHECKIDENT (TBMEDICAMENTO, RESEED, 0)";
-
-        private const string sqlExcluirFornecedor =
-          @"DELETE FROM TBFORNECEDOR  DBCC CHECKIDENT (TBFORNECEDOR, RESEED, 0)";
-
+    
         RepositorioMedicamentoEmBancoDados repositorioMedicamento = new();
         RepositorioFornecedorEmBancoDados repositorio = new();
 
         Random random = new Random();
 
-        private const string enderecoBanco =
-       "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=DBMed;Integrated Security=True;Connect Timeout=60;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
-
-
-
-        public RepositorioFornecedorEmBancoDadosTest()
-        {
-            SqlConnection conexaoComBanco = new SqlConnection(enderecoBanco);
-
-            SqlCommand comandoExclusao = new SqlCommand(sqlExcluirMedicamento, conexaoComBanco);
-            SqlCommand comandoExclusaoFornecedor = new SqlCommand(sqlExcluirFornecedor, conexaoComBanco);
-
-
-
-            conexaoComBanco.Open();
-            comandoExclusao.ExecuteNonQuery();
-            comandoExclusaoFornecedor.ExecuteNonQuery();
-            conexaoComBanco.Close();
-        }
 
 
         [TestMethod]
@@ -59,7 +33,8 @@ namespace Controlefornecedors.Infra.BancoDados.Tests.ModuloFornecedor
 
             Fornecedor registro2 = repositorio.SelecionarPorID(registro.Id);
 
-            Assert.AreEqual(registro2, registro);
+            registro2.Should().NotBeNull();
+            registro2.Should().Be(registro);
         }
 
 
@@ -73,7 +48,8 @@ namespace Controlefornecedors.Infra.BancoDados.Tests.ModuloFornecedor
 
             Fornecedor fornecedor2 = repositorio.SelecionarPorID(fornecedor.Id);
 
-            Assert.AreEqual(fornecedor, fornecedor2);
+            fornecedor2.Should().NotBeNull();
+            fornecedor2.Should().Be(fornecedor);
 
         }
 
@@ -90,10 +66,10 @@ namespace Controlefornecedors.Infra.BancoDados.Tests.ModuloFornecedor
 
             repositorio.Inserir(fornecedor);
 
-            ValidationResult result = repositorio.Excluir(fornecedor);
+             repositorio.Excluir(fornecedor);
 
-
-            Assert.AreEqual(result.Errors.Count, 0);
+            repositorio.SelecionarPorID(fornecedor.Id)
+                          .Should().BeNull();
 
         }
         [TestMethod]
@@ -113,7 +89,9 @@ namespace Controlefornecedors.Infra.BancoDados.Tests.ModuloFornecedor
 
             for (int i = 0; i < fornecedorsDoBanco.Count; i++)
             {
-                Assert.AreEqual(fornecedorsDoBanco[i], fornecedors[i]);
+
+                fornecedorsDoBanco[i].Should().NotBeNull();
+                fornecedorsDoBanco[i].Should().Be(fornecedors[i]);
             }
 
 
@@ -135,7 +113,8 @@ namespace Controlefornecedors.Infra.BancoDados.Tests.ModuloFornecedor
             Fornecedor fornecedor2 = repositorio.SelecionarPorID(fornecedor.Id);
 
 
-            Assert.AreEqual(fornecedor2, fornecedor);
+            fornecedor2.Should().NotBeNull();
+            fornecedor2.Should().Be(fornecedor);
 
         }
 

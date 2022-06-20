@@ -8,6 +8,7 @@ using ControleMedicamentos.Infra.BancoDados.ModuloFuncionario;
 using ControleMedicamentos.Infra.BancoDados.ModuloMedicamento;
 using ControleMedicamentos.Infra.BancoDados.ModuloPaciente;
 using ControleMedicamentos.Infra.BancoDados.ModuloRequisicao;
+using ControleMedicamentos.Infra.BancoDados.Tests.ModuloCompartilhado;
 using FluentValidation.Results;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -20,37 +21,16 @@ using System.Threading.Tasks;
 namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloRequisicao
 {
     [TestClass]
-    public class RepositorioRequisicaoEmBancoDadosTest
+    public class RepositorioRequisicaoEmBancoDadosTest : BaseTestRepositorio
     {
         RepositorioRequisicaoeEmBancoDados repositorio;
         Random random = new Random();
-        private const string sqlExcluir =
-      @"
-        DELETE FROM TBREQUISICAO  DBCC CHECKIDENT (TBREQUISICAO, RESEED, 0)
-        DELETE FROM TBPACIENTE  DBCC CHECKIDENT (TBPACIENTE, RESEED, 0)
-        DELETE FROM TBFuncionario  DBCC CHECKIDENT (TBFuncionario, RESEED, 0) 
-        DELETE FROM TBMEDICAMENTO  DBCC CHECKIDENT (TBMEDICAMENTO, RESEED, 0) 
-        DELETE FROM TBFORNECEDOR  DBCC CHECKIDENT (TBFORNECEDOR, RESEED, 0) ";
-
-
-
-        private const string enderecoBanco =
-       "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=DBMed;Integrated Security=True;Connect Timeout=60;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
-
-
+    
 
         public RepositorioRequisicaoEmBancoDadosTest()
         {
-            SqlConnection conexaoComBanco = new SqlConnection(enderecoBanco);
-
-            SqlCommand comandoExclusao = new SqlCommand(sqlExcluir, conexaoComBanco);
-
-
+       
             repositorio = new();
-
-            conexaoComBanco.Open();
-            comandoExclusao.ExecuteNonQuery();
-            conexaoComBanco.Close();
         }
 
         [TestMethod]

@@ -1,5 +1,6 @@
 ﻿using ControleMedicamentos.Dominio.ModuloFuncionario;
 using ControleMedicamentos.Infra.BancoDados.ModuloFuncionario;
+using ControleMedicamentos.Infra.BancoDados.Tests.ModuloCompartilhado;
 using FluentValidation.Results;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -12,30 +13,13 @@ using System.Threading.Tasks;
 namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloFuncionario
 {
     [TestClass]
-    public class RepositorioFuncionarioEmBancoDadosTest
+    public class RepositorioFuncionarioEmBancoDadosTest : BaseTestRepositorio
     {
-        private const string sqlExcluir =
-          @"DELETE FROM TBFuncionario  DBCC CHECKIDENT (TBFuncionario, RESEED, 0)";
+     
 
         Random  random = new Random();
 
         RepositorioFuncionarioEmBancoDados repositorio = new();
-
-        private const string enderecoBanco =
-       "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=DBMed;Integrated Security=True;Connect Timeout=60;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
-
-
-
-        public RepositorioFuncionarioEmBancoDadosTest()
-        {
-            SqlConnection conexaoComBanco = new SqlConnection(enderecoBanco);
-
-            SqlCommand comandoExclusao = new SqlCommand(sqlExcluir, conexaoComBanco);
-
-            conexaoComBanco.Open();
-            comandoExclusao.ExecuteNonQuery();
-            conexaoComBanco.Close();
-        }
 
 
 
